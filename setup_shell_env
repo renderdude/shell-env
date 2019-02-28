@@ -1,0 +1,10 @@
+#! /bin/bash
+
+ln -s shell-env/.shared_env .
+ln -s shell-env/.shared_rc .
+ln -s shell-env/.shared_rc.d .
+ln -s shell-env/.zsh .
+ln -s shell-env/.zshenv .
+ln -s shell-env/.zshrc .
+ln -s shell-env/.zshrc.other-user .
+ln -s shell-env/bin .

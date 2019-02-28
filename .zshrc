@@ -167,9 +167,10 @@ sh_load_status 'setting environment'
 [[ "$ZSH_VERSION_TYPE" == 'old' ]] || typeset -T INFOPATH infopath
 typeset -U infopath # no duplicates
 export INFOPATH
-infopath=( 
-          ~/{share/,}info(N)
-          /usr/{share/,}info(N)
+infopath=(
+          ~/local/$OSTYPE/{share/,}info(N)
+          ~/{local/,}{share/,}info(N)
+          /usr/{local/,}{share/,}info(N)
           $infopath
          )
 
@@ -183,14 +184,27 @@ case "$OSTYPE" in
     ;;
 
   *)
-    echo "Not Linux? really?" >&2
+    # Don't trust system-wide MANPATH?  Remember what it was, for reference.
+    sysmanpath=$HOME/.sysmanpath.$HOST
+    [ -e $sysmanpath ] || echo "$MANPATH" > $sysmanpath
+    manpath=( )
+
+    # ... or *do* trust system-wide MANPATH
+    #MANPATH=/usr/local/bin:/usr/X11R6/bin:/usr/local/sbin:/usr/sbin:/sbin:$MANPATH
+
+    for dir in "$path[@]"; do
+      [[ "$dir" == */bin ]] || continue
+      mandir="${dir//\/bin//man}"
+      [[ -d "$mandir" ]] && manpath=( "$mandir" "$manpath[@]" )
+    done
+
     ;;
 esac
 
 # Add extra paths to path determined by /etc/man.config
 MANPATH="`MANPATH= manpath`"
 manpath=(
-    $ZDOTDIR/share/[m]an(N)
+    $ZDOTDIR/{local/,}share/[m]an(N)
     "$manpath[@]"
 )
 
@@ -247,6 +261,11 @@ TMOUT=1800
 #}
 
 # }}}
+
+# }}}
+# {{{ DYLD
+
+export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH:=.}
 
 # }}}
 # {{{ Prompts
@@ -386,7 +405,7 @@ zstyle ':completion:*' squeeze-slashes 'yes'
 # {{{ Include non-hidden dirs in globbed file completions for certain commands
 
 #zstyle ':completion::complete:*' \
-#  tag-order 'globbed-files directories' all-files 
+#  tag-order 'globbed-files directories' all-files
 #zstyle ':completion::complete:*:tar:directories' file-patterns '*~.*(-/)'
 
 # }}}
@@ -419,9 +438,9 @@ zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:descriptions' format "%B---- %d%b"
 
 # Messages/warnings format
-zstyle ':completion:*:messages' format '%B%U---- %d%u%b' 
+zstyle ':completion:*:messages' format '%B%U---- %d%u%b'
 zstyle ':completion:*:warnings' format '%B%U---- no match for: %d%u%b'
- 
+
 # Describe options in full
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:options' auto-description '%d'
@@ -431,7 +450,7 @@ zstyle ':completion:*:options' auto-description '%d'
 
 # When completing inside array or association subscripts, the array
 # elements are more useful than parameters so complete them first:
-zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters 
+zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
 
 # }}}
 # {{{ Completion for processes
@@ -440,7 +459,7 @@ zstyle ':completion:*:*:*:*:processes' menu yes select
 zstyle ':completion:*:*:*:*:processes' force-list always
 
 # }}}
-# {{{ Simulate my old dabbrev-expand 3.0.5 patch 
+# {{{ Simulate my old dabbrev-expand 3.0.5 patch
 
 zstyle ':completion:*:history-words' stop yes
 zstyle ':completion:*:history-words' remove-all-dups yes
@@ -463,7 +482,7 @@ if [[ "$ZSH_VERSION_TYPE" == 'new' ]]; then
   # %%\#* -> remove comment lines and trailing comments
   # (ps:\t:) -> split on tab
   # ##[:blank:]#[^[:blank:]]# -> remove comment lines
-  
+
   : ${(A)_etc_hosts:=${(s: :)${(ps:\t:)${${(f)~~"$(</etc/hosts)"}%%\#*}##[:blank:]#[^[:blank:]]#}}}
 # _ssh_known_hosts=(${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*})
 else
@@ -676,7 +695,7 @@ fi
 
 # jeez I'm lazy ...
 for opts in {,a}{,r}{,t}{,L}{,S}; do
-    eval "alias l$opts='ls -lh$opts $LS_OPTS'"
+    eval "alias l$opts='ls -h$opts $LS_OPTS'"
     eval "alias ll$opts='ls -l$opts $LS_OPTS'"
     eval "alias ls$opts='ls ${opts:+-$opts} $LS_OPTS'"
 done
@@ -730,14 +749,25 @@ cd () {
   fi
 }
 
+alias dp='dirs -p -v'
+
 z () {
   cd ~/"$1"
 }
 
+prune() {
+  if (( $# >= 1 )); then
+    chmod 777 "$@"
+    /bin/rm -rf "$@"
+    return
+  fi
+}
+
 alias md='mkdir -p'
 alias rd=rmdir
-
+alias rm='/bin/rm -i'
 alias d='dirs -v'
+alias pu=pushd
 
 po () {
   popd "$@"
@@ -749,6 +779,29 @@ po () {
 
 autoload zmv
 alias mmv='noglob zmv -W'
+
+# }}}
+# {{{ tar
+
+alias gzt='tar tvzf '
+alias gzx='tar xvzf '
+alias bzt='tar tvjf '
+alias bzx='tar xvjf '
+
+# }}}
+# {{{ Process aliases
+
+alias pf='ps -u $USER -f'
+alias pl="ps -u $USER -l"
+alias pe="ps -e"
+alias pel="ps -el"
+alias pef="ps -ef"
+
+# }}}
+# {{{ make
+
+alias mk=make
+alias gk=gmake
 
 # }}}
 # {{{ tree
@@ -784,12 +837,9 @@ alias term='echo $TERM'
 # {{{ Changing terminal window/icon titles
 
 which cx >&/dev/null || cx () { }
-
 if [[ "$TERM" == ([Ex]term*|rxvt*|screen*) ]] && [[ -z "$SKIP_CX" ]]; then
-    # Could also look at /proc/$PPID/cmdline ...
-    # Don't do this, as it resets window titles set by tmux etc.
-    # cx
-    :
+  # Could also look at /proc/$PPID/cmdline ...
+  cx
 fi
 
 # }}}
@@ -850,13 +900,59 @@ zsh-mime-setup
 # }}}
 # {{{ Other programs
 
+# {{{ papillon
+
+export PAPILLON_HOME=$HOME/papillon
+alias sp='source $PAPILLON_HOME/utils/source_me.zsh'
+
+
+# }}}
+# {{{  ISPC
+
+path+=$HOME/software/src/ispc-v1.6.0-osx
+
+# }}}
+# {{{  Sublime Text
+
+path+=/Applications/Sublime\ Text.app/Contents/SharedSupport/bin
+
+# }}}
+# {{{  Open Scene Graph
+
+path+=/usr/local/share/OpenSceneGraph/bin
+export DYLD_BIND_AT_LAUNCH
+LD_LIBRARY_PATH+=:/opt/local/lib
+DYLD_LIBRARY_PATH+=:/usr/local/lib
+export OSG_FILE_PATH=$HOME/software/src/OpenSceneGraph/OpenSceneGraph-data
+
+# }}}
+# {{{ Override the python version for Houdini
+
+export HOUDINI_PYTHON_LIB=/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python
+
+# }}}
+# {{{ Modules
+
+alias mlo='module load'
+alias ml='module list'
+alias ma='module avail'
+alias mul='module unload'
+
+# }}}
+# {{{ Python Emacs
+
+export PYMACS_PYTHON=/Users/bolstadm/Projects/SCE/build/i386-OSX/CSE/Release/python-2.5.2/Python.framework/Versions/Current/bin/python
+
+export PYTHONPATH=/Users/bolstadm/elisp
+
+# }}}
 # {{{ less
 
 if ! which less >&/dev/null; then
   alias less=more
 fi
 
-alias v=less
+alias m=less
 alias vs='less -S'
 
 # }}}
@@ -882,6 +978,13 @@ fi
 
 alias bz=bzip2
 alias buz=bunzip2
+
+# }}}
+# {{{ bzip2
+
+export RMANTREE=/Applications/Pixar/RenderManProServer-22.2
+export RMSTREE=/Applications/Pixar/RenderManForMaya-22.2
+path+=$RMANTREE/bin
 
 # }}}
 
@@ -1038,7 +1141,7 @@ alias -g EA9="|& awk '{print \$9}'"
 # }}}
 
 # }}}
-# {{{ Key bindings 
+# {{{ Key bindings
 
 sh_load_status 'key bindings'
 
@@ -1088,8 +1191,8 @@ sh_load_status 'miscellaneous'
 
 # {{{ ls colours
 
-if which dircolors >&/dev/null && [[ -e "${zdotdir}/.dircolors" ]]; then
-  eval "`dircolors -b $zdotdir/.dircolors`"
+if which dircolors >&/dev/null && [[ -e "${zdotdir}/.dir_colors" ]]; then
+  eval "`dircolors -b $zdotdir/.dir_colors`"
 fi
 
 if [[ $ZSH_VERSION > 3.1.5 ]]; then
@@ -1100,9 +1203,12 @@ if [[ $ZSH_VERSION > 3.1.5 ]]; then
   zstyle ':completion:*:*:*:*:processes' list-colors \
     '=(#b) #([0-9]#)*=0=01;31'
 
+  # Need this for OSX
+  export CLICOLOR=1
+
   # completion colours
   zstyle ':completion:*' list-colors "$LS_COLORS"
-fi  
+fi
 
 # }}}
 # {{{ Don't always autologout

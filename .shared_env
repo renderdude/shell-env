@@ -54,11 +54,11 @@ sh_load_status () {
   [ -n "$_this_script" ] && _this_script="[$_this_script]"
 
   # Leave status printed?
-  
+
   if [ "$DEBUG_LOCAL_HOOKS" -ge 2 ]; then
     debug="\n"
   fi
-  
+
   # \e[0K is clear to right
   if [ -n "$shell_interactive" ] && [ "$TERM" != 'dumb' ]; then
     _text="${_this_shell}${_this_script}: $*... "
@@ -107,10 +107,54 @@ if [ ! -e $syspath ]; then
     # cross-WAN.
     echo "$PATH" 2>/dev/null > "$syspath"
 fi
-PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
+PATH=/opt/local/bin:/opt/local/libexec/gnubin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+#export QMAKE4_PATH=$HOME/Qt/bin
+#export QMAKE5_PATH=$HOME/anaconda3/bin
+#PATH=$QMAKE4_PATH:$PATH
 
 # ... or *do* trust system-wide PATH
 #PATH=/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH
+
+export PATH="$OPENIMAGEIOHOME/bin:$OSL_HOME/bin:$PATH"
+
+# CUDA setup
+#export PATH=/Developer/NVIDIA/CUDA-6.5/bin:$PATH
+#export DYLD_LIBRARY_PATH=/Developer/NVIDIA/CUDA-6.5/lib:$DYLD_LIBRARY_PATH
+
+# Anaconda3 
+export PATH="$HOME/anaconda3/bin:$PATH"
+
+# Intel Tools Setup
+case "$OSTYPE" in
+  linux*)
+    {
+      source /opt/intel/bin/compilervars.sh intel64
+      source /opt/intel/advisor_2019/advixe-vars.sh intel64
+      source /opt/intel/inspector_2019/inspxe-vars.sh intel64
+      source /opt/intel/vtune_amplifier_2019/amplxe-vars.sh intel64
+      source /opt/intel/debugger_2019/bin/debuggervars.sh intel64
+#      source /opt/intel/advisor_2018/advixe-vars.sh intel64
+#      source /opt/intel/inspector_2018/inspxe-vars.sh intel64
+#      source /opt/intel/vtune_amplifier_2018/amplxe-vars.sh intel64
+#      source /opt/intel/debugger_2018/bin/debuggervars.sh intel64
+    } &> /dev/null
+    ;;
+  darwin*)
+    {
+      source /opt/intel/bin/compilervars.sh intel64
+    } &> /dev/null
+    ;;
+esac
+
+# PGI Compiler
+export PGI=/opt/pgi
+export PATH=$PGI/osx86-64/2017/bin:$PATH
+
+export SPACK_ROOT=$HOME/spack
+export PATH=$SPACK_ROOT/bin:$PATH
+. $(spack location -i lmod)/lmod/lmod/init/zsh
+. $SPACK_ROOT/share/spack/setup-env.sh
 
 . $ZDOTDIR/.zsh/functions/enable_wordsplit
 newpaths=
