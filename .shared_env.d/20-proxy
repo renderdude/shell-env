@@ -1,0 +1,18 @@
+# -*- mode: sh -*-
+
+# set proxies for Sandia network
+export ALL_PROXY=http://wwwproxy.sandia.gov:80
+export HTTP_PROXY=$ALL_PROXY
+export HTTPS_PROXY=$ALL_PROXY
+export FTP_PROXY=$ALL_PROXY
+export RSYNC_PROXY=$ALL_PROXY
+export http_proxy=$ALL_PROXY
+export https_proxy=$ALL_PROXY
+export ftp_proxy=$ALL_PROXY
+export rsync_proxy=$ALL_PROXY
+export NO_PROXY=.sandia.gov,.local,134.253.0.0
+
+# set values for Unity
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+export Unity_PROXYSERVER=$ALL_PROXY
+
