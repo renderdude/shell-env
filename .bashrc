@@ -236,7 +236,6 @@ alias tf='less +F'
 
 # }}}
 
-echo -e -n "\r\e[0K"
 
 fi
 

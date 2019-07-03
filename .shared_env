@@ -147,13 +147,12 @@ case "$OSTYPE" in
     ;;
 esac
 
-# PGI Compiler
-export PGI=/opt/pgi
-export PATH=$PGI/osx86-64/2017/bin:$PATH
-
+# Spack
 export SPACK_ROOT=$HOME/spack
 export PATH=$SPACK_ROOT/bin:$PATH
 . $(spack location -i lmod)/lmod/lmod/init/zsh
+module use $HOME/spack/share/spack/lmod/darwin-mojave-x86_64/Core
+module unuse $HOME/spack/share/spack/modules/darwin-mojave-x86_64
 . $SPACK_ROOT/share/spack/setup-env.sh
 
 . $ZDOTDIR/.zsh/functions/enable_wordsplit

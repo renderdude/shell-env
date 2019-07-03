@@ -982,8 +982,7 @@ alias buz=bunzip2
 # }}}
 # {{{ bzip2
 
-export RMANTREE=/Applications/Pixar/RenderManProServer-22.2
-export RMSTREE=/Applications/Pixar/RenderManForMaya-22.2
+export RMANTREE=/Applications/Pixar/RenderManProServer-22.5
 path+=$RMANTREE/bin
 
 # }}}
@@ -1141,6 +1140,12 @@ alias -g EA9="|& awk '{print \$9}'"
 # }}}
 
 # }}}
+hs() {
+        pushd /Applications/Houdini/Current/Frameworks/Houdini.framework/Versions/Current/Resources
+        source houdini_setup_bash
+        popd
+}
+
 # {{{ Key bindings
 
 sh_load_status 'key bindings'

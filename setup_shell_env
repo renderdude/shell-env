@@ -1,6 +1,7 @@
 #! /bin/bash
 
 ln -s shell-env/.shared_env .
+ln -s shell-env/.shared_env.d .
 ln -s shell-env/.shared_rc .
 ln -s shell-env/.shared_rc.d .
 ln -s shell-env/.zsh .
