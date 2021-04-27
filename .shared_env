@@ -142,7 +142,7 @@ case "$OSTYPE" in
     ;;
   darwin*)
     {
-      source /opt/intel/bin/compilervars.sh intel64
+      . /opt/intel/oneapi/setvars.sh
     } &> /dev/null
     ;;
 esac
@@ -151,9 +151,9 @@ esac
 export SPACK_ROOT=$HOME/spack
 export PATH=$SPACK_ROOT/bin:$PATH
 . $(spack location -i lmod)/lmod/lmod/init/zsh
-module use $HOME/spack/share/spack/lmod/darwin-mojave-x86_64/Core
-module unuse $HOME/spack/share/spack/modules/darwin-mojave-x86_64
 . $SPACK_ROOT/share/spack/setup-env.sh
+module use $SPACK_ROOT/share/spack/lmod/darwin-catalina-x86_64/Core
+module unuse $SPACK_ROOT/share/spack/modules/darwin-catalina-x86_64
 
 . $ZDOTDIR/.zsh/functions/enable_wordsplit
 newpaths=

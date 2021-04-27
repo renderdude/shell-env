@@ -909,7 +909,7 @@ alias sp='source $PAPILLON_HOME/utils/source_me.zsh'
 # }}}
 # {{{  ISPC
 
-path+=$HOME/software/src/ispc-v1.6.0-osx
+path+=$HOME/test/ispc-v1.15.0-macOS/bin
 
 # }}}
 # {{{  Sublime Text
@@ -982,7 +982,7 @@ alias buz=bunzip2
 # }}}
 # {{{ bzip2
 
-export RMANTREE=/Applications/Pixar/RenderManProServer-22.5
+export RMANTREE=/Applications/Pixar/RenderManProServer-23.5
 path+=$RMANTREE/bin
 
 # }}}

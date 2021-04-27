@@ -13,6 +13,6 @@ export rsync_proxy=$ALL_PROXY
 export NO_PROXY=.sandia.gov,.local,134.253.0.0
 
 # set values for Unity
-export NODE_TLS_REJECT_UNAUTHORIZED=0
-export Unity_PROXYSERVER=$ALL_PROXY
+#export NODE_TLS_REJECT_UNAUTHORIZED=0
+#export Unity_PROXYSERVER=$ALL_PROXY
 
